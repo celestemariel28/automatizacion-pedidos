@@ -10,7 +10,7 @@ export default function Header({ view, searchQuery, setSearchQuery, setView }) {
   const isFormView = view === 'form';
 
   return (
-    <header className="p-4 bg-[#FFC5D3] flex items-center justify-between shadow-sm sticky top-0 z-50">
+    <header className="p-4 bg-rose-50 flex items-center justify-between shadow-sm sticky top-0 z-50">
       <button 
         onClick={handleGoHome}
         className="w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 border-[#D81B60] overflow-hidden shadow-md shrink-0 active:scale-95 transition-transform cursor-pointer focus:outline-none"
@@ -28,7 +28,7 @@ export default function Header({ view, searchQuery, setSearchQuery, setView }) {
           type="text" 
           placeholder={
             isFormView 
-              ? "Finalizando pedido... 🛍️" 
+              ? "Finalizando pedido... " 
               : view === 'categories' ? "Buscar Categorías..." : "Buscar dulces..."
           } 
           value={isFormView ? "" : searchQuery}
