@@ -4,8 +4,15 @@ import { useCategoryForm } from '../../hooks/useCategoryForm';
 import AdminCategoryList from './AdminCategoryList';
 import { Tag, FolderEdit } from 'lucide-react';
 
-function AdminCategoryManager({ onRefreshProducts }) {
-  const { categories, formData, setters, loading, actions } = useCategoryForm(onRefreshProducts);
+// 1. Recibimos la prop onCategoryChanged que viene desde el AdminLayout
+function AdminCategoryManager({ onRefreshProducts, onCategoryChanged }) {
+  
+  // 2. Se la pasamos al hook adentro de un objeto para que la pueda usar al guardar
+  const { categories, formData, setters, loading, actions } = useCategoryForm({ 
+    onRefreshProducts, 
+    onCategoryChanged 
+  });
+  
   const { newCategoryName, newCategoryImage, categoryToEdit } = formData;
 
   return (

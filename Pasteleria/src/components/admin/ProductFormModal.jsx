@@ -1,8 +1,10 @@
+// src/components/admin/ProductFormModal.jsx
 import React from 'react';
 import { useProductForm } from '../../hooks/useProductForm';
-import { FileEdit, Sparkles } from 'lucide-react'; // 👈 Importamos los íconos de edición/nuevo
+import { FileEdit, Sparkles } from 'lucide-react'; 
 
-function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess }) {
+// 1. Agregamos "categories" aquí en las propiedades que recibe el modal
+function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess, categories = [] }) {
   const { formData, setters, loading, guardarProducto } = useProductForm(
     productToEdit,
     isOpen,
@@ -20,12 +22,12 @@ function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess }) {
         <h3 className="text-xl font-black text-[#E91E63] mb-4 flex items-center space-x-2">
           {productToEdit ? (
             <>
-              <FileEdit className="w-5 h-5 text-amber-500" /> {/* Ícono dinámico de edición */}
+              <FileEdit className="w-5 h-5 text-amber-500" />
               <span>Editar Dulce</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-5 h-5 text-pink-500" /> {/* Ícono dinámico de nuevo dulce */}
+              <Sparkles className="w-5 h-5 text-pink-500" />
               <span>Nuevo Dulce</span>
             </>
           )}
@@ -39,11 +41,19 @@ function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess }) {
 
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Categoría</label>
-            <select value={formData.categoryId} onChange={(e) => setters.setCategoryId(e.target.value)} className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-sm focus:outline-none focus:border-[#E91E63]">
-              <option value="1">Tortas</option>
-              <option value="2">Tartas</option>
-              <option value="3">Masitas</option>
-              <option value="4">Alfajores</option>
+            <select 
+              value={formData.categoryId} 
+              onChange={(e) => setters.setCategoryId(e.target.value)} 
+              className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-sm focus:outline-none focus:border-[#E91E63]"
+              required
+            >
+              {/* 🔄 EL GRAN CAMBIO ACÁ: Reemplazamos los valores fijos por tu lista real mapeada */}
+              <option value="">Seleccionar una categoría</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 

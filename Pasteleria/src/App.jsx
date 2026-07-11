@@ -9,7 +9,7 @@ import AdminLayout from './components/admin/AdminLayout';
 
 function App() {
   // Manejo de pantallas: 'categories', 'products', 'form', 'admin'
-  const [view, setView] = useState('admin');
+  const [view, setView] = useState('categories');
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');

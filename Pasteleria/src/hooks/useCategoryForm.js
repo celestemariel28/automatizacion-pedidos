@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export function useCategoryForm(onSaveSuccess) {
+export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
   const [categories, setCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryImage, setNewCategoryImage] = useState('');
@@ -92,6 +92,9 @@ export function useCategoryForm(onSaveSuccess) {
       alert(`No se pudo eliminar: ${error.message}`);
     }
   };
+  if (onCategoryChanged) {
+    onCategoryChanged(); // 👈 Esto le avisa al AdminLayout que recargue la lista global
+  }
 
   return {
     categories,

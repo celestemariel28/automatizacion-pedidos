@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Mail, Lock, Crown } from 'lucide-react'; // 👈 Importamos los íconos profesionales
+import { useNavigate } from 'react-router-dom';
 
 function Login({ onLoginSuccess, setView }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,8 +23,6 @@ function Login({ onLoginSuccess, setView }) {
       });
 
       if (error) throw error;
-
-      alert('¡Bienvenida, Jefa! Iniciando sesión...');
       onLoginSuccess(data.user);
     } catch (error) {
       console.error('Error en la autenticación:', error.message);
@@ -83,13 +83,14 @@ function Login({ onLoginSuccess, setView }) {
           {loading ? 'Verificando...' : 'Ingresar al Panel'}
         </button>
       </form>
-
+      
       <button 
-        onClick={() => setView('categories')} 
-        className="mt-6 text-xs text-gray-400 hover:text-gray-600 transition-colors text-center font-medium"
+        onClick={() => navigate('/')} // 👈 🔄 CAMBIAMOS ESTO: Ahora te manda físicamente a la ruta raíz
+        className="mt-3 w-full py-2.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold active:scale-95 transition-transform"
       >
-        ← Volver a la Tienda
+        Ir al Catálogo Público
       </button>
+      
     </div>
   );
 }

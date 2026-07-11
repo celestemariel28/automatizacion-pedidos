@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ProductsView({ filteredProducts, selectedCategoryName, setView, setSearchQuery, cart, addToCart, removeFromCart, calculateSubtotal, isCartEmpty }) {
   return (
-    <main className="flex-1 p-4 pb-24">
+    <main className={`flex-1 p-4 transition-all ${Object.keys(cart).length > 0 ? 'pb-40' : 'pb-4'}`}>
       <div className="flex items-center gap-2 mb-6">
         <button 
             onClick={() => { setView('categories'); setSearchQuery(''); }} 
@@ -16,7 +16,7 @@ export default function ProductsView({ filteredProducts, selectedCategoryName, s
         <h2 className="text-3xl font-bold text-white drop-shadow-sm">{selectedCategoryName}</h2>
       </div>
       
-      <div className="flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto space-y-4">
         {filteredProducts.map(product => {
           const isAgotado = product.stock === 0;
           const alcanzoLimiteStock = (cart[product.id] || 0) >= product.stock;
