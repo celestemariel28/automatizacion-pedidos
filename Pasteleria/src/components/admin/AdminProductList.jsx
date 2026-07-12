@@ -1,6 +1,5 @@
-// src/components/admin/AdminProductList.jsx
 import React from 'react';
-import { Pencil, Trash2 } from 'lucide-react'; // 👈 Importamos los íconos profesionales
+import { Pencil, Trash2 } from 'lucide-react'; 
 
 function AdminProductList({ products = [], loading, onEdit, onDelete }) {
   if (loading) {
@@ -25,21 +24,14 @@ function AdminProductList({ products = [], loading, onEdit, onDelete }) {
             </div>
           </div>
 
-          {/* ACCIONES INTERACTIVAS CON ÍCONOS */}
           <div className="flex space-x-1.5">
-            <button 
-              onClick={() => onEdit(product)}
-              className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-colors"
-              title="Editar dulce"
+            <button  onlick={() => onEdit(product)} className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-colors" title="Editar dulce"
             >
-              <Pencil className="w-3.5 h-3.5" /> {/* 👈 Ícono vectorial estilizado */}
+              <Pencil className="w-3.5 h-3.5" /> 
             </button>
-            <button 
-              onClick={() => onDelete(product.id, product.name)}
-              className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors"
-              title="Eliminar del catálogo"
+            <button onClick={() => onDelete(product.id, product.name)} className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors" title="Eliminar del catálogo"
             >
-              <Trash2 className="w-3.5 h-3.5" /> {/* 👈 Ícono vectorial estilizado */}
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

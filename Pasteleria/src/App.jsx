@@ -8,7 +8,6 @@ import Login from './components/admin/Login';
 import AdminLayout from './components/admin/AdminLayout';
 
 function App() {
-  // Manejo de pantallas: 'categories', 'products', 'form', 'admin'
   const [view, setView] = useState('categories');
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState('');
@@ -51,7 +50,6 @@ function App() {
     return subtotal;
   };
 
-  // --- PANTALLA DE CARGA INICIAL ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#FFC5D3] to-[#E91E63] flex items-center justify-center">
@@ -60,12 +58,10 @@ function App() {
     );
   }
 
-  // --- RESTAURACIÓN DE TU INTERFAZ ORIGINAL ---
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col font-sans selection:bg-[#E91E63] selection:text-white">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#FFC5D3] to-[#E91E63] min-h-screen flex flex-col shadow-2xl relative">
         
-        {/* El Header se renderiza si no estamos en la pantalla de administración */}
         {view !== 'admin' && (
           <Header 
             view={view} 
@@ -74,8 +70,6 @@ function App() {
             setView={setView} 
           />
         )}
-
-        {/* RENDERIZADO CONDICIONAL DE VISTAS */}
         {view === 'categories' && (
           <CategoriesView 
             filteredCategories={filteredCategories}
@@ -85,7 +79,6 @@ function App() {
             setSearchQuery={setSearchQuery}
           />
         )}
-
         {view === 'products' && (
           <ProductsView 
             key={Object.keys(cart).length + '-' + Object.values(cart).reduce((a, b) => a + b, 0)}
@@ -100,7 +93,6 @@ function App() {
             isCartEmpty={Object.keys(cart).length === 0}
           />
         )}
-
         {view === 'form' && (
           <FormView 
             setView={setView}
@@ -109,7 +101,6 @@ function App() {
             PRODUCTS_MOCK={products} 
           />
         )}
-
         {view === 'admin' && (
           <AdminLayout setView={setView} />
         )}

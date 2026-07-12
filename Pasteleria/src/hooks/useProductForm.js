@@ -1,4 +1,3 @@
-// src/hooks/useProductForm.js
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -46,7 +45,6 @@ export function useProductForm(productToEdit, isOpen, onClose, onSaveSuccess) {
 
     try {
       if (productToEdit) {
-        // 🔄 MODIFICACIÓN
         const { error } = await supabase
           .from('products')
           .update(productData)
@@ -55,13 +53,12 @@ export function useProductForm(productToEdit, isOpen, onClose, onSaveSuccess) {
         if (error) throw error;
         alert('¡Producto actualizado con éxito! 🧁');
       } else {
-        // ✨ ALTA
         const { error } = await supabase
           .from('products')
           .insert([productData]);
 
         if (error) throw error;
-        alert('¡Nuevo dulce agregado al catálogo! 🎉');
+        alert('¡Nuevo dulce agregado al catálogo!');
       }
 
       onSaveSuccess();

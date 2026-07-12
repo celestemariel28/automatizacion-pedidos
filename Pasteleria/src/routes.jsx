@@ -1,9 +1,6 @@
-// src/routes.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './App'; 
-
-// 👇 ¡Ojo acá! Revisá que coincida con tus carpetas reales (si admin es con minúscula o mayúscula)
 import AdminLayout from './components/admin/AdminLayout'; 
 
 function ProjectRoutes() {

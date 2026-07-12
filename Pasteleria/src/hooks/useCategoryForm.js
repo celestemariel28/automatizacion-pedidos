@@ -1,4 +1,3 @@
-// src/hooks/useCategoryForm.js
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -59,14 +58,14 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
           .eq('id', categoryToEdit.id);
 
         if (error) throw error;
-        alert('¡Categoría actualizada con éxito! 🏷️');
+        alert('¡Categoría actualizada con éxito!');
       } else {
         const { error } = await supabase
           .from('categories')
           .insert([categoryData]);
 
         if (error) throw error;
-        alert('¡Categoría agregada con éxito! 🎉');
+        alert('¡Categoría agregada con éxito!');
       }
 
       handleCancelEdit();
@@ -85,7 +84,7 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
       const { error } = await supabase.from('categories').delete().eq('id', id);
       if (error) throw error;
 
-      alert('Categoría eliminada correctamente. 🗑️');
+      alert('Categoría eliminada correctamente.');
       if (categoryToEdit?.id === id) handleCancelEdit();
       fetchCategories();
     } catch (error) {
@@ -93,7 +92,7 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
     }
   };
   if (onCategoryChanged) {
-    onCategoryChanged(); // 👈 Esto le avisa al AdminLayout que recargue la lista global
+    onCategoryChanged(); // Esto le avisa al AdminLayout que recargue la lista global
   }
 
   return {

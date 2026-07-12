@@ -1,13 +1,12 @@
 import React from 'react';
 
 export default function ProductsView({ filteredProducts, selectedCategoryName, setView, setSearchQuery, cart, addToCart, removeFromCart, calculateSubtotal, isCartEmpty }) {
+
   return (
     <main className={`flex-1 p-4 transition-all ${Object.keys(cart).length > 0 ? 'pb-40' : 'pb-4'}`}>
       <div className="flex items-center gap-2 mb-6">
-        <button 
-            onClick={() => { setView('categories'); setSearchQuery(''); }} 
-            className="w-9 h-9 flex items-center justify-center bg-white rounded-full hover:bg-rose-50 text-[#E91E63] shadow-md transition-all active:scale-90"
-            title="Volver"
+        <button onClick={() => { setView('categories'); setSearchQuery(''); }} 
+            className="w-9 h-9 flex items-center justify-center bg-white rounded-full hover:bg-rose-50 text-[#E91E63] shadow-md transition-all active:scale-90" title="Volver"
             >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
@@ -46,16 +45,14 @@ export default function ProductsView({ filteredProducts, selectedCategoryName, s
                   </span>
                 ) : (
                   <div className="flex items-center gap-1.5 bg-white/90 p-1.5 rounded-full shadow-lg backdrop-blur-sm">
-                    <button 
-                      onClick={() => removeFromCart(product.id)} 
+                    <button onClick={() => removeFromCart(product.id)} 
                       className={`w-7 h-7 flex items-center justify-center rounded-full font-bold transition-colors ${cart[product.id] ? 'bg-[#E91E63] text-white hover:bg-[#D81B60]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`} 
                       disabled={!cart[product.id]}
                     >
                       −
                     </button>
                     <span className="w-5 text-center font-bold text-[#E91E63]">{cart[product.id] || 0}</span>
-                    <button 
-                      onClick={() => addToCart(product.id)} 
+                    <button onClick={() => addToCart(product.id)} 
                       className={`w-7 h-7 flex items-center justify-center rounded-full font-bold transition-colors ${alcanzoLimiteStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#E91E63] text-white hover:bg-[#D81B60]'}`}
                       disabled={alcanzoLimiteStock}
                     >

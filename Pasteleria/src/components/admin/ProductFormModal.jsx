@@ -1,9 +1,8 @@
-// src/components/admin/ProductFormModal.jsx
 import React from 'react';
 import { useProductForm } from '../../hooks/useProductForm';
 import { FileEdit, Sparkles } from 'lucide-react'; 
 
-// 1. Agregamos "categories" aquí en las propiedades que recibe el modal
+// Agregamos "categories" en las propiedades que recibe el modal
 function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess, categories = [] }) {
   const { formData, setters, loading, guardarProducto } = useProductForm(
     productToEdit,
@@ -18,7 +17,6 @@ function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess, categ
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
       <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-y-auto">
         
-        {/* TÍTULO MEJORADO CON ÍCONOS VECTORIALES */}
         <h3 className="text-xl font-black text-[#E91E63] mb-4 flex items-center space-x-2">
           {productToEdit ? (
             <>
@@ -41,13 +39,9 @@ function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess, categ
 
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Categoría</label>
-            <select 
-              value={formData.categoryId} 
-              onChange={(e) => setters.setCategoryId(e.target.value)} 
-              className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-sm focus:outline-none focus:border-[#E91E63]"
-              required
+            <select value={formData.categoryId} onChange={(e) => setters.setCategoryId(e.target.value)} 
+              className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-100 text-sm focus:outline-none focus:border-[#E91E63]" required
             >
-              {/* 🔄 EL GRAN CAMBIO ACÁ: Reemplazamos los valores fijos por tu lista real mapeada */}
               <option value="">Seleccionar una categoría</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>

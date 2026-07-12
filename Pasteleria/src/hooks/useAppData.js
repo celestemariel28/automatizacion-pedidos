@@ -1,4 +1,3 @@
-// src/hooks/useAppData.js
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -11,23 +10,20 @@ export function useAppData(searchQuery, selectedCategoryId) {
     async function cargarDatosReales() {
       try {
         setLoading(true);
-
-        // 1. Traer categorías
+        // Traer categorías
         const { data: catData, error: catError } = await supabase
           .from('categories')
           .select('*')
           .order('name', { ascending: true });
 
         if (catError) throw catError;
-
-        // 2. Traer productos
+        // Traer productos
         const { data: prodData, error: prodError } = await supabase
           .from('products')
           .select('*');
 
         if (prodError) throw prodError;
-
-        // 3. Mapear datos de forma segura (si vienen vacíos, usamos un array vacío)
+        //Mapear datos de forma segura (si vienen vacíos, usamos un array vacío)
         const categoriasAdaptadas = (catData || []).map(c => ({
           id: c.id,
           name: c.name,
@@ -48,7 +44,6 @@ export function useAppData(searchQuery, selectedCategoryId) {
         setProducts(productosAdaptados);
       } catch (error) {
         console.error("Error conectando a Supabase:", error.message);
-        // Si hay un error de conexión, no congelamos la app, la dejamos seguir vacía
         setCategories([]);
         setProducts([]);
       } finally {

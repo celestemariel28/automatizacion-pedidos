@@ -9,8 +9,7 @@ export default function CategoriesView({ filteredCategories, setSelectedCategory
       
       <div className="flex flex-col gap-4">
         {filteredCategories.map((cat) => (
-          <button
-            key={cat.id}
+          <button key={cat.id}
             onClick={() => {
               setSelectedCategoryId(cat.id);
               setSelectedCategoryName(cat.name);
