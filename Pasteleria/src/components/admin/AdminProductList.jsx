@@ -25,7 +25,7 @@ function AdminProductList({ products = [], loading, onEdit, onDelete }) {
           </div>
 
           <div className="flex space-x-1.5">
-            <button  onlick={() => onEdit(product)} className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-colors" title="Editar dulce"
+            <button  onClick={() => onEdit(product)} className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition-colors" title="Editar dulce"
             >
               <Pencil className="w-3.5 h-3.5" /> 
             </button>

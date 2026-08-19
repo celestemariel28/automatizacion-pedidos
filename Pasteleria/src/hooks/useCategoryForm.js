@@ -18,7 +18,6 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
 
       if (error) throw error;
       setCategories(data || []);
-      if (onSaveSuccess) onSaveSuccess(); // Sincroniza si la tienda necesita refrescarse
     } catch (error) {
       console.error('Error cargando categorías:', error.message);
     } finally {
@@ -49,7 +48,12 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
     try {
       setLoading(true);
       const imagenFinal = newCategoryImage.trim() || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500';
-      const categoryData = { name: newCategoryName.trim(), image_url: imagenFinal };
+      
+      // 🔠 Convertir a mayúsculas automáticamente
+      const categoryData = { 
+        name: newCategoryName.trim().toUpperCase(), 
+        image_url: imagenFinal 
+      };
 
       if (categoryToEdit) {
         const { error } = await supabase
@@ -69,7 +73,10 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
       }
 
       handleCancelEdit();
-      fetchCategories();
+      await fetchCategories();
+
+      if (onCategoryChanged) onCategoryChanged();
+      if (onRefreshProducts) onRefreshProducts();
     } catch (error) {
       alert(`Error al guardar: ${error.message}`);
     } finally {
@@ -86,14 +93,14 @@ export function useCategoryForm({ onRefreshProducts, onCategoryChanged }) {
 
       alert('Categoría eliminada correctamente.');
       if (categoryToEdit?.id === id) handleCancelEdit();
-      fetchCategories();
+      await fetchCategories();
+
+      if (onCategoryChanged) onCategoryChanged();
+      if (onRefreshProducts) onRefreshProducts();
     } catch (error) {
       alert(`No se pudo eliminar: ${error.message}`);
     }
   };
-  if (onCategoryChanged) {
-    onCategoryChanged(); // Esto le avisa al AdminLayout que recargue la lista global
-  }
 
   return {
     categories,

@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        pastelPink: '#FFC0CB', 
-        darkPink: '#FF1493',
+        pastelPink: '#FFD0DE', 
+        darkPink: '#FFE9EF',
       },
     },
   },

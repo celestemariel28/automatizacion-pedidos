@@ -4,43 +4,36 @@ import { supabase } from '../supabaseClient';
 export function useProductForm(productToEdit, isOpen, onClose, onSaveSuccess) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
   const [categoryId, setCategoryId] = useState('1');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Sincronizar el formulario con el producto a editar o limpiar si es nuevo
   useEffect(() => {
-    if (productToEdit) {
-      setName(productToEdit.name || '');
-      setDescription(productToEdit.description || '');
-      setPrice(productToEdit.price || '');
-      setStock(productToEdit.stock || 0);
-      setCategoryId(productToEdit.categoryId || '1');
-      setImageUrl(productToEdit.image || '');
-    } else {
+    if (!productToEdit && isOpen) {
       setName('');
       setDescription('');
-      setPrice('');
-      setStock('');
       setCategoryId('1');
       setImageUrl('');
     }
   }, [productToEdit, isOpen]);
 
-  const guardarProducto = async (e) => {
-    e.preventDefault();
+  const guardarProducto = async (e, listaVariantes = []) => {
+    if (e) e.preventDefault();
     setLoading(true);
 
+    const precioBase = listaVariantes.length > 0 ? (parseFloat(listaVariantes[0].price) || 0) : 0;
+    const stockTotal = listaVariantes.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+
     const productData = {
-      name,
+      // 🔠 Convertir a mayúsculas automáticamente
+      name: name.trim().toUpperCase(),
       description,
-      price: parseFloat(price) || 0,
-      stock: parseInt(stock) || 0,
+      price: precioBase,
+      stock: stockTotal,
       category_id: parseInt(categoryId),
       image_url: imageUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500',
-      is_available: parseInt(stock) > 0
+      is_available: stockTotal > 0,
+      variante: listaVariantes
     };
 
     try {
@@ -72,8 +65,8 @@ export function useProductForm(productToEdit, isOpen, onClose, onSaveSuccess) {
   };
 
   return {
-    formData: { name, description, price, stock, categoryId, imageUrl },
-    setters: { setName, setDescription, setPrice, setStock, setCategoryId, setImageUrl },
+    formData: { name, description, categoryId, imageUrl },
+    setters: { setName, setDescription, setCategoryId, setImageUrl },
     loading,
     guardarProducto
   };

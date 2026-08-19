@@ -6,6 +6,7 @@ import ProductsView from './components/client/ProductsView';
 import FormView from './components/client/FormView';
 import Login from './components/admin/Login'; 
 import AdminLayout from './components/admin/AdminLayout';
+import CustomCakeView from './components/client/CustomCakeView';
 
 function App() {
   const [view, setView] = useState('categories');
@@ -14,53 +15,64 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState({});
   
-  // Consumimos el hook (si da error o está vacío, devolvemos arrays vacíos por defecto)
   const { products = [], loading, filteredCategories = [], filteredProducts = [] } = useAppData(searchQuery, selectedCategoryId);
 
-  // --- FUNCIONES DEL CARRITO ---
-  const addToCart = (productId) => {
-    const product = products.find(p => p.id === productId);
-    const currentQty = cart[productId] || 0;
+  // 🌸 Actualización forzada con nueva referencia limpia
+  const handleUpdateProductVariantsInCart = (productId, selectedVariants = []) => {
+    setCart((prevCart) => {
+      const nextCart = {};
 
-    if (product && currentQty >= product.stock) {
-      alert(`¡Ups! Solo quedan ${product.stock} unidades disponibles.`);
-      return;
-    }
-    setCart(prev => ({ ...prev, [productId]: currentQty + 1 }));
-  };
+      // Mantenemos los productos que NO sean el que estamos editando
+      Object.entries(prevCart).forEach(([key, item]) => {
+        if (!key.startsWith(`${productId}-`) && String(item.productId) !== String(productId)) {
+          nextCart[key] = item;
+        }
+      });
 
-  const removeFromCart = (productId) => {
-    setCart(prev => {
-      const newCart = { ...prev };
-      if (newCart[productId] > 1) {
-        newCart[productId] -= 1;
-      } else {
-        delete newCart[productId];
-      }
-      return { ...newCart };
+      // Agregamos las nuevas variantes seleccionadas con cantidad > 0
+      selectedVariants.forEach((item) => {
+        const qty = parseInt(item.quantity, 10) || 0;
+        if (qty > 0) {
+          const cartKey = `${productId}-${item.variantId}`;
+          nextCart[cartKey] = {
+            id: cartKey,
+            productId: productId,
+            productName: item.productName || item.name,
+            image: item.image || item.image_url,
+            variantId: item.variantId,
+            variantLabel: item.variantLabel || item.label,
+            price: parseFloat(item.price) || 0,
+            quantity: qty,
+            maxStock: parseInt(item.maxStock, 10) || parseInt(item.stock, 10) || 0
+          };
+        }
+      });
+
+      return { ...nextCart };
     });
   };
 
   const calculateSubtotal = () => {
-    let subtotal = 0;
-    Object.keys(cart).forEach(productId => {
-      const product = products.find(p => p.id === parseInt(productId));
-      if (product) subtotal += product.price * cart[productId];
-    });
-    return subtotal;
+    return Object.values(cart).reduce((total, item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity, 10) || 0;
+      return total + (price * quantity);
+    }, 0);
   };
+
+  const isCartEmpty = Object.keys(cart).length === 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FFC5D3] to-[#E91E63] flex items-center justify-center">
-        <p className="text-white font-black text-2xl animate-pulse">Cargando dulces... 🧁</p>
+      <div className="min-h-screen bg-[#FFE9EF] flex items-center justify-center">
+        <p className="text-[#E91E63] font-black text-2xl animate-pulse">Cargando dulces... 🧁</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-rose-50 flex flex-col font-sans selection:bg-[#E91E63] selection:text-white">
-      <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#FFC5D3] to-[#E91E63] min-h-screen flex flex-col shadow-2xl relative">
+      <div className="w-full max-w-md mx-auto bg-white min-h-screen flex flex-col shadow-2xl relative">
         
         {view !== 'admin' && (
           <Header 
@@ -70,6 +82,7 @@ function App() {
             setView={setView} 
           />
         )}
+
         {view === 'categories' && (
           <CategoriesView 
             filteredCategories={filteredCategories}
@@ -79,20 +92,28 @@ function App() {
             setSearchQuery={setSearchQuery}
           />
         )}
+
+        {view === 'custom-cake' && (
+          <CustomCakeView 
+            setView={setView}
+            onUpdateProductVariants={handleUpdateProductVariantsInCart}
+          />
+        )}
+
         {view === 'products' && (
           <ProductsView 
-            key={Object.keys(cart).length + '-' + Object.values(cart).reduce((a, b) => a + b, 0)}
+            key={JSON.stringify(cart)}
             filteredProducts={filteredProducts}
             selectedCategoryName={selectedCategoryName}
             setView={setView}
             setSearchQuery={setSearchQuery}
             cart={cart}
-            addToCart={addToCart}
-            removeFromCart={removeFromCart}
+            onUpdateProductVariants={handleUpdateProductVariantsInCart}
             calculateSubtotal={calculateSubtotal}
-            isCartEmpty={Object.keys(cart).length === 0}
+            isCartEmpty={isCartEmpty}
           />
         )}
+
         {view === 'form' && (
           <FormView 
             setView={setView}
@@ -101,9 +122,11 @@ function App() {
             PRODUCTS_MOCK={products} 
           />
         )}
+
         {view === 'admin' && (
           <AdminLayout setView={setView} />
         )}
+
       </div>
     </div>
   );
