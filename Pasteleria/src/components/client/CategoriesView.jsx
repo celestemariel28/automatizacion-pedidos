@@ -27,7 +27,7 @@ export default function CategoriesView({ filteredCategories, setSelectedCategory
           >
             <img src={cat.image || cat.image_url} alt={cat.name} className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[#E91E63]/15 mix-blend-multiply" />
-            <span className="relative z-10 text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)] px-2 text-center">
+            <span className="text-categori-font relative z-10 text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)] px-2 text-center">
               {cat.name}
             </span>
           </button>

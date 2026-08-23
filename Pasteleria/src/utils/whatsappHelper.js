@@ -1,18 +1,23 @@
-import { supabase } from '../supabaseClient'; 
+import { supabase } from '../supabaseClient';
 
 export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUCTS_MOCK }) => {
   try {
+    // 1. Agrupar los productos regulares para descontar stock (excluyendo tortas personalizadas creadas dinámicamente)
     const itemsPorProducto = {};
     Object.values(cart).forEach(item => {
-      const qty = parseInt(item.quantity, 10) || 0;
-      if (qty > 0) {
-        if (!itemsPorProducto[item.productId]) {
-          itemsPorProducto[item.productId] = [];
+      const qty = parseInt(item?.quantity, 10) || 0;
+      const isDynamicCustom = String(item?.productId || '').toLowerCase().startsWith('custom');
+      
+      if (qty > 0 && !isDynamicCustom) {
+        const prodId = item.productId;
+        if (!itemsPorProducto[prodId]) {
+          itemsPorProducto[prodId] = [];
         }
-        itemsPorProducto[item.productId].push(item);
+        itemsPorProducto[prodId].push(item);
       }
     });
 
+    // 2. Descontar stock en Supabase para productos del catálogo
     for (const [productId, items] of Object.entries(itemsPorProducto)) {
       const { data: currentProduct, error: fetchError } = await supabase
         .from('products')
@@ -30,7 +35,7 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
         try { variantes = JSON.parse(variantes); } catch { variantes = []; }
       }
 
-      const variantesActualizadas = variantes.map(v => {
+      const variantesActualizadas = (variantes || []).map(v => {
         const itemComprado = items.find(i => String(i.variantId) === String(v.id));
         if (itemComprado) {
           const nuevoStock = Math.max(0, (parseInt(v.stock, 10) || 0) - itemComprado.quantity);
@@ -45,25 +50,54 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
         .eq('id', productId);
 
       if (updateError) {
-        console.error("Error al actualizar stock en la base de datos:", updateError);
+        console.error("Error al actualizar stock:", updateError);
       }
     }
   } catch (err) {
     console.error("Error al procesar el descuento de stock:", err);
   }
 
+  // 3. Generar la lista de productos
   let productsListText = '';
+  let requiereFotoDiseno = false;
+
   Object.values(cart).forEach((item) => {
-    const qty = parseInt(item.quantity, 10) || 0;
+    const qty = parseInt(item?.quantity, 10) || 0;
     if (qty > 0) {
       const name = item.productName || item.name || 'Dulce';
-      const variant = item.variantLabel ? ` (${item.variantLabel})` : '';
+      const isCustomCake = String(item?.productId || '').toLowerCase().startsWith('custom') || 
+                           name.toUpperCase().includes('PERSONALIZADA');
+      const isMiniTorta = name.toLowerCase().includes('mini torta') || 
+                          name.toLowerCase().includes('minitorta') ||
+                          name.toLowerCase().includes('mini');
+
+      if (isCustomCake || isMiniTorta) {
+        requiereFotoDiseno = true;
+      }
+
       const price = parseFloat(item.price) || 0;
       const totalLine = price * qty;
-      productsListText += `• ${qty}x ${name}${variant} - $${totalLine.toLocaleString('es-AR')}\n`;
+
+      if (isCustomCake) {
+        productsListText += `🎂 *${name}*\n`;
+        productsListText += `   ↳ *Detalle:* ${item.variantLabel || 'Personalizada'}\n`;
+        productsListText += `   ↳ *Precio base:* $${totalLine.toLocaleString('es-AR')}\n\n`;
+      } else if (isMiniTorta) {
+        productsListText += `🧁 *${name}*\n`;
+        if (item.filling) {
+          productsListText += `   ↳ *Relleno extra:* ${item.filling}\n`;
+        } else if (item.variantLabel && !item.variantLabel.toLowerCase().includes('unidad')) {
+          productsListText += `   ↳ *Detalle:* ${item.variantLabel}\n`;
+        }
+        productsListText += `   ↳ *Cantidad:* ${qty} un. - $${totalLine.toLocaleString('es-AR')}\n\n`;
+      } else {
+        const variant = item.variantLabel ? ` (${item.variantLabel})` : '';
+        productsListText += `• ${qty}x ${name}${variant} - $${totalLine.toLocaleString('es-AR')}\n`;
+      }
     }
   });
 
+  // 4. Armado del mensaje general
   let message = `🧁 *Nuevo Pedido - Candela Garbini*\n\n`;
   message += `👤 *Cliente:* ${formData.name}\n`;
   message += `📱 *Celular:* ${formData.phone}\n`;
@@ -81,12 +115,17 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
     message += `💬 *Notas:* ${formData.notes.trim()}\n`;
   }
 
-  message += `\n🛒 *Detalle del Pedido:*\n${productsListText}\n`;
-  message += `💰 *TOTAL A PAGAR:* $${totalPedido.toLocaleString('es-AR')}`;
+  message += `\n🛒 *Detalle del Pedido:*\n${productsListText.trim()}\n\n`;
+  message += `💰 *TOTAL APROXIMADO:* $${totalPedido.toLocaleString('es-AR')}`;
+
+  // 5. Nota especial para Tortas Personalizadas y Mini Tortas
+  if (requiereFotoDiseno) {
+    message += `\n\n⚠️ _*Nota:* El valor inicial está sujeto a modificaciones según la complejidad del diseño y cambios en bizcochuelos o rellenos._`;
+    message += `\n📸 *Foto del diseño:* A continuación te adjunto la imagen o foto de referencia del diseño que me gustaría para mi pedido.`;
+  }
 
   const phoneNumber = "543815689490";
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
 
-  // 4. Redirigimos al WhatsApp con el mensaje cargado
   window.open(whatsappUrl, '_blank');
 };

@@ -7,6 +7,7 @@ import FormView from './components/client/FormView';
 import Login from './components/admin/Login'; 
 import AdminLayout from './components/admin/AdminLayout';
 import CustomCakeView from './components/client/CustomCakeView';
+import { CakeSlice } from 'lucide-react';
 
 function App() {
   const [view, setView] = useState('categories');
@@ -17,55 +18,68 @@ function App() {
   
   const { products = [], loading, filteredCategories = [], filteredProducts = [] } = useAppData(searchQuery, selectedCategoryId);
 
-  // 🌸 Actualización forzada con nueva referencia limpia
-  const handleUpdateProductVariantsInCart = (productId, selectedVariants = []) => {
-    setCart((prevCart) => {
-      const nextCart = {};
+  // En src/App.jsx
 
-      // Mantenemos los productos que NO sean el que estamos editando
-      Object.entries(prevCart).forEach(([key, item]) => {
-        if (!key.startsWith(`${productId}-`) && String(item.productId) !== String(productId)) {
-          nextCart[key] = item;
+  const calculateSubtotal = () => {
+    return Object.values(cart).reduce((total, item) => {
+      const qty = parseInt(item?.quantity, 10) || 0;
+      const price = parseFloat(item?.price) || 0;
+      return total + (qty * price);
+    }, 0);
+  };
+
+  const handleUpdateProductVariantsInCart = (productId, selectedVariants) => {
+    setCart((prevCart) => {
+      const nextCart = { ...prevCart };
+
+      // 1. Borramos SOLO las variantes que coincidan exactamente con este productId
+      Object.keys(nextCart).forEach((key) => {
+        if (String(nextCart[key].productId) === String(productId)) {
+          delete nextCart[key];
         }
       });
 
-      // Agregamos las nuevas variantes seleccionadas con cantidad > 0
-      selectedVariants.forEach((item) => {
-        const qty = parseInt(item.quantity, 10) || 0;
+      // 2. Insertamos las variantes con precio numérico garantizado
+      selectedVariants.forEach((variant) => {
+        const qty = parseInt(variant.quantity, 10) || 0;
         if (qty > 0) {
-          const cartKey = `${productId}-${item.variantId}`;
-          nextCart[cartKey] = {
-            id: cartKey,
-            productId: productId,
-            productName: item.productName || item.name,
-            image: item.image || item.image_url,
-            variantId: item.variantId,
-            variantLabel: item.variantLabel || item.label,
-            price: parseFloat(item.price) || 0,
+          const varId = String(variant.variantId || variant.id || 'default');
+          const itemKey = `${productId}_${varId}`;
+          
+          nextCart[itemKey] = {
+            ...variant,
+            productId: String(productId),
+            variantId: varId,
             quantity: qty,
-            maxStock: parseInt(item.maxStock, 10) || parseInt(item.stock, 10) || 0
+            price: parseFloat(variant.price) || 0
           };
         }
       });
 
-      return { ...nextCart };
+      return { ...nextCart }; // Forzamos nueva referencia para que React reaccione al instante
     });
   };
 
-  const calculateSubtotal = () => {
-    return Object.values(cart).reduce((total, item) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity, 10) || 0;
-      return total + (price * quantity);
-    }, 0);
-  };
+  // 3. Eliminar ítem individual con la X
+  const handleRemoveItemFromCart = (cartKey) => {
+    setCart((prevCart) => {
+      const nextCart = { ...prevCart };
+      delete nextCart[cartKey];
+      return nextCart;
+    });
+};
 
   const isCartEmpty = Object.keys(cart).length === 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFE9EF] flex items-center justify-center">
-        <p className="text-[#E91E63] font-black text-2xl animate-pulse">Cargando dulces... 🧁</p>
+      <div className="min-h-screen bg-[#FFE9EF] flex flex-col items-center justify-center gap-3">
+        <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center shadow-md animate-bounce">
+          <CakeSlice className="w-8 h-8 text-[#E91E63]" />
+        </div>
+        <p className="text-[#E91E63] font-black text-2xl tracking-wide animate-pulse">
+          Cargando dulces...
+        </p>
       </div>
     );
   }
@@ -101,8 +115,7 @@ function App() {
         )}
 
         {view === 'products' && (
-          <ProductsView 
-            key={JSON.stringify(cart)}
+          <ProductsView
             filteredProducts={filteredProducts}
             selectedCategoryName={selectedCategoryName}
             setView={setView}
@@ -110,16 +123,18 @@ function App() {
             cart={cart}
             onUpdateProductVariants={handleUpdateProductVariantsInCart}
             calculateSubtotal={calculateSubtotal}
+            onRemoveItemFromCart={handleRemoveItemFromCart} // 👈 Asegurate que esté acá
             isCartEmpty={isCartEmpty}
           />
         )}
 
         {view === 'form' && (
-          <FormView 
+          <FormView
             setView={setView}
             cart={cart}
             calculateSubtotal={calculateSubtotal}
-            PRODUCTS_MOCK={products} 
+            onRemoveItemFromCart={handleRemoveItemFromCart} // 👈 Y acá
+            PRODUCTS_MOCK={products}
           />
         )}
 
