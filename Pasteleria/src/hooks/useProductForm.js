@@ -44,7 +44,7 @@ export function useProductForm(productToEdit, isOpen, onClose, onSaveSuccess) {
           .eq('id', productToEdit.id);
 
         if (error) throw error;
-        alert('¡Producto actualizado con éxito! 🧁');
+        alert('¡Producto actualizado con éxito!');
       } else {
         const { error } = await supabase
           .from('products')

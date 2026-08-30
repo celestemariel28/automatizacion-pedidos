@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import CartSummaryCard from './CartSummaryCard';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
+import ViewHeader from '../common/ViewHeader';
 
 export default function ProductsView({
   filteredProducts = [],
@@ -62,25 +63,16 @@ export default function ProductsView({
   };
 
   return (
-    <main className="flex-1 p-4 max-w-md mx-auto w-full pb-28 animate-fadeIn">
+    <main className="flex-1 p-2 max-w-md mx-auto w-full pb-18 animate-fadeIn">
       {/* Botón Volver y Título */}
-      <div className="flex items-center gap-3 mb-4">
-        <button
-          type="button"
-          onClick={() => {
-            setView('categories');
-            setSearchQuery('');
-          }}
-          className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-[#E91E63] shadow-sm active:scale-90 transition-transform cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <h2 className="text-2xl font-black text-[#E91E63] capitalize">
-          {selectedCategoryName || 'Productos'}
-        </h2>
-      </div>
+      <ViewHeader
+        title={selectedCategoryName || 'Productos'}
+        onBack={() => {
+          setView('categories');
+          if (setSearchQuery) setSearchQuery('');
+        }}
+        backTitle="Volver a Categorías"
+      />
 
       {/* Lista de Productos */}
       <div className="flex flex-col gap-4">

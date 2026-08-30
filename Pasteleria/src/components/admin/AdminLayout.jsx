@@ -6,14 +6,13 @@ import AdminProductList from './AdminProductList';
 import AdminCategoryManager from './AdminCategoryManager';
 import FillingsAdmin from './FillingsAdmin';
 import InfoSlidesAdmin from './InfoSlidesAdmin';
-import { CakeSlice, Tag, PlusCircle, LogOut, Sparkles, Image } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import CustomCakeAdmin from './CustomCakeAdmin';
-import { Layers } from 'lucide-react'; 
 import CoveringsAdmin from './CoveringsAdmin';
-import { Shield } from 'lucide-react';
+import DiscountAdmin from './DiscountAdmin'; 
+import { CakeSlice, Tag, PlusCircle, LogOut, Sparkles, Image, Layers, Shield, Percent } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const SESSION_DURATION_MS = 20 * 60 * 1000; // 20 minutos
+const SESSION_DURATION_MS = 20 * 60 * 1000; 
 
 function AdminLayout({ setView }) {
   const navigate = useNavigate();
@@ -117,8 +116,7 @@ function AdminLayout({ setView }) {
   if (!user) return <Login setView={setView} onLoginSuccess={handleLoginSuccess} />;
 
   return (
-    <div className="flex-1 p-4 flex flex-col bg-white m-4 rounded-3xl shadow-xl max-h-[85vh] overflow-hidden">
-      {/* Encabezado */}
+    <div className="flex-1 p-4 flex flex-col bg-white rounded-3xl max-h-[90vh] overflow-hidden">
       <div className="flex justify-between items-center border-b pb-2 mb-2">
         <div>
           <h2 className="text-lg font-black text-[#E91E63]">Panel de Control</h2>
@@ -133,57 +131,65 @@ function AdminLayout({ setView }) {
         </button>
       </div>
 
-      {/* Pestañas de Navegación (4 Secciones) */}
-      <div className="grid grid-cols-4 bg-gray-100 p-1 rounded-xl mb-3 gap-1">
-        <button 
-          onClick={() => setActiveTab('products')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'products' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
-        >
-          <CakeSlice className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Productos</span>
-        </button>
-
+      <div className="flex overflow-x-auto no-scrollbar bg-gray-100 p-1 rounded-xl mb-3 gap-1 shrink-0">
         <button 
           onClick={() => setActiveTab('categories')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'categories' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'categories' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <Tag className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Categorías</span>
+          <span>Categorías</span>
         </button>
 
         <button 
-          onClick={() => setActiveTab('fillings')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'fillings' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('products')}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'products' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Rellenos</span>
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('slides')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'slides' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
-        >
-          <Image className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Info</span>
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('customCakes')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'customCakes' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Precios Tortas</span>
+          <CakeSlice className="w-3.5 h-3.5" />
+          <span>Productos</span>
         </button>
 
         <button 
           onClick={() => setActiveTab('coverings')}
-          className={`py-1.5 flex items-center justify-center space-x-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${activeTab === 'coverings' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'coverings' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <Shield className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Coberturas</span>
+          <span>Coberturas</span>
         </button>
+
+        <button 
+          onClick={() => setActiveTab('fillings')}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'fillings' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Rellenos</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('customCakes')}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'customCakes' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Precios Tortas</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('promos')}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'promos' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Percent className="w-3.5 h-3.5" />
+          <span>Promos</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('slides')}
+          className={`py-1.5 px-3 flex items-center space-x-1 text-[11px] font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${activeTab === 'slides' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Image className="w-3.5 h-3.5" />
+          <span>Info</span>
+        </button>        
       </div>
 
+      {/* Contenido según la pestaña activa */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeTab === 'products' && (
           <>
@@ -214,6 +220,12 @@ function AdminLayout({ setView }) {
               onRefreshProducts={fetchAdminProducts} 
               onCategoryChanged={fetchAdminCategories} 
             />
+          </div>
+        )}
+
+        {activeTab === 'promos' && (
+          <div className="flex-1 overflow-y-auto pr-1">
+            <DiscountAdmin />
           </div>
         )}
 
@@ -250,7 +262,7 @@ function AdminLayout({ setView }) {
             navigate('/');
           }
         }} 
-        className="mt-3 w-full py-2.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer"
+        className="mt-3 w-full py-2.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold active:scale-95 transition-transform cursor-pointer hover:bg-gray-200"
       >
         Ir al Catálogo Público
       </button>

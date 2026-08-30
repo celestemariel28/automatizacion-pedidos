@@ -1,39 +1,62 @@
-import React from 'react';
+import HeroCarousel from './HeroCarousel';
 
-export default function CategoriesView({ filteredCategories, setSelectedCategoryId, setSelectedCategoryName, setView, setSearchQuery }) {
+export default function CategoriesView({
+  filteredCategories = [],
+  setSelectedCategoryId,
+  setSelectedCategoryName,
+  setView,
+  setSearchQuery,
+  discountSettings
+}) {
+  const handleSelectCategory = (cat) => {
+    setSelectedCategoryId(cat.id);
+    setSelectedCategoryName(cat.name);
+    if (setSearchQuery) setSearchQuery('');
+
+    if (cat.name && cat.name.toLowerCase().includes('personalizada')) {
+      setView('custom-cake');
+    } else {
+      setView('products');
+    }
+  };
+
   return (
-    <main className="flex-1 p-4 flex flex-col gap-4">
-      <h2 className="text-3xl font-extrabold text-[#E91E63] text-center tracking-wide my-2 drop-shadow-md">
-        Productos
-      </h2>
-      
-      <div className="flex flex-col gap-4">
+    <main className="flex-1 p-4 max-w-2xl mx-auto w-full pb-24 animate-fadeIn">
+      <HeroCarousel discountSettings={discountSettings} />
+
+      <div id="seccion-categorias" className="scroll-mt-24 pt-4 mb-4">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#E91E63] text-center tracking-wide">
+          Categorías
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {filteredCategories.map((cat) => (
-          <button 
+          <button
             key={cat.id}
-            onClick={() => {
-              setSelectedCategoryId(cat.id);
-              setSelectedCategoryName(cat.name);
-              setSearchQuery(''); 
-              
-              // 🌸 Si el nombre contiene "personalizada", abre la vista especial
-              if (cat.name && cat.name.toLowerCase().includes('personalizada')) {
-                setView('custom-cake');
-              } else {
-                setView('products');
-              }
-            }}
-            className="w-full h-28 rounded-2xl overflow-hidden relative shadow-lg hover:scale-[1.02] transition-transform duration-200 group active:scale-95 flex items-center justify-center cursor-pointer"
+            type="button"
+            onClick={() => handleSelectCategory(cat)}
+            className="group w-full h-32 sm:h-36 rounded-2xl overflow-hidden relative flex items-center justify-center cursor-pointer shadow-sm active:scale-95 transition-all duration-200 border border-pink-100"
           >
-            <img src={cat.image || cat.image_url} alt={cat.name} className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-[#E91E63]/15 mix-blend-multiply" />
-            <span className="text-categori-font relative z-10 text-2xl sm:text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)] px-2 text-center">
+            <img
+              src={cat.image || cat.image_url}
+              alt={cat.name}
+              className="absolute inset-0 w-full h-full object-cover blur-[1.5px] scale-105 group-hover:scale-115 transition-transform duration-500 ease-out"
+            />
+
+            <div className="absolute inset-0 bg-black/25 group-hover:bg-black/35 transition-colors duration-300" />
+            <div className="absolute inset-0 bg-[#E91E63]/25 mix-blend-multiply" />
+
+            <span className=" categ-nombre relative z-10 text-xl sm:text-2xl font-black text-white uppercase tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] px-3 text-center transition-transform duration-300 group-hover:scale-105">
               {cat.name}
             </span>
           </button>
         ))}
+
         {filteredCategories.length === 0 && (
-          <p className="text-gray-400 text-center mt-4">No se encontraron categorías.</p>
+          <p className="text-gray-400 text-xs text-center col-span-full py-8">
+            No se encontraron categorías disponibles.
+          </p>
         )}
       </div>
     </main>

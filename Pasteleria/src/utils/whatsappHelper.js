@@ -1,8 +1,19 @@
 import { supabase } from '../supabaseClient';
 
-export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUCTS_MOCK }) => {
+export const enviarPedidoWhatsApp = async ({ 
+  formData, 
+  cart, 
+  subtotal, 
+  discountAmount = 0, 
+  discountPercent = 0, 
+  discountPaymentMethod = 'Efectivo',
+  totalFinal, 
+  PRODUCTS_MOCK 
+}) => {
+  const orderNumber = `PED-${Math.floor(1000 + Math.random() * 9000)}`;
+
   try {
-    // 1. Agrupar los productos regulares para descontar stock (excluyendo tortas personalizadas creadas dinámicamente)
+    // 1. Agrupar los productos regulares para descontar stock
     const itemsPorProducto = {};
     Object.values(cart).forEach(item => {
       const qty = parseInt(item?.quantity, 10) || 0;
@@ -17,7 +28,7 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
       }
     });
 
-    // 2. Descontar stock en Supabase para productos del catálogo
+    // 2. Descontar stock en Supabase
     for (const [productId, items] of Object.entries(itemsPorProducto)) {
       const { data: currentProduct, error: fetchError } = await supabase
         .from('products')
@@ -36,9 +47,16 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
       }
 
       const variantesActualizadas = (variantes || []).map(v => {
-        const itemComprado = items.find(i => String(i.variantId) === String(v.id));
+        // Obtenemos todos los items comprados que correspondan a esta variante
+        // (limpiando sufijos como _CREMAPASTELERA con split('_')[0])
+        const itemComprado = items.find(i => {
+          const rawVariantId = String(i.variantId || '').split('_')[0];
+          return String(v.id) === rawVariantId || String(v.id) === String(i.variantId);
+        });
+
         if (itemComprado) {
-          const nuevoStock = Math.max(0, (parseInt(v.stock, 10) || 0) - itemComprado.quantity);
+          const stockActual = parseInt(v.stock, 10) || 0;
+          const nuevoStock = Math.max(0, stockActual - itemComprado.quantity);
           return { ...v, stock: nuevoStock };
         }
         return v;
@@ -98,15 +116,18 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
   });
 
   // 4. Armado del mensaje general
-  let message = `🧁 *Nuevo Pedido - Candela Garbini*\n\n`;
+  let message = `🧁 *Nuevo Pedido - Candela Garbini*\n`;
+  message += `🔖 *NRO:* #${orderNumber}\n\n`;
   message += `👤 *Cliente:* ${formData.name}\n`;
   message += `📱 *Celular:* ${formData.phone}\n`;
   message += `📦 *Entrega:* ${formData.deliveryType || 'Retiro en tienda'}\n`;
   message += `💳 *Forma de Pago:* ${formData.paymentMethod}\n`;
 
+  const finalAmount = totalFinal !== undefined ? totalFinal : (subtotal || 0);
+
   if (formData.paymentMethod === 'Efectivo') {
     const cash = parseFloat(formData.cashAmount) || 0;
-    const vuelto = cash - totalPedido;
+    const vuelto = cash - finalAmount;
     message += `💵 *Paga con:* $${cash.toLocaleString('es-AR')}\n`;
     message += vuelto > 0 ? `🪙 *Llevar vuelto de:* $${vuelto.toLocaleString('es-AR')}\n` : `🪙 *Paga justo, no llevar vuelto.*\n`;
   }
@@ -116,9 +137,15 @@ export const enviarPedidoWhatsApp = async ({ formData, cart, totalPedido, PRODUC
   }
 
   message += `\n🛒 *Detalle del Pedido:*\n${productsListText.trim()}\n\n`;
-  message += `💰 *TOTAL APROXIMADO:* $${totalPedido.toLocaleString('es-AR')}`;
+  message += `Subtotal: $${(subtotal || finalAmount).toLocaleString('es-AR')}\n`;
 
-  // 5. Nota especial para Tortas Personalizadas y Mini Tortas
+  if (discountAmount > 0) {
+    message += `🏷️ *Descuento ${discountPaymentMethod} (${discountPercent}% OFF):* -$${discountAmount.toLocaleString('es-AR')}\n`;
+    message += `💰 *TOTAL FINAL CON DESCUENTO:* $${finalAmount.toLocaleString('es-AR')}`;
+  } else {
+    message += `💰 *TOTAL APROXIMADO:* $${finalAmount.toLocaleString('es-AR')}`;
+  }
+
   if (requiereFotoDiseno) {
     message += `\n\n⚠️ _*Nota:* El valor inicial está sujeto a modificaciones según la complejidad del diseño y cambios en bizcochuelos o rellenos._`;
     message += `\n📸 *Foto del diseño:* A continuación te adjunto la imagen o foto de referencia del diseño que me gustaría para mi pedido.`;

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2, Plus } from 'lucide-react';
+import ImageUploader from '../common/ImageUploader'; 
 
 export default function InfoSlidesAdmin() {
   const [slides, setSlides] = useState([]);
   const [title, setTitle] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const fetchSlides = async () => {
     setLoading(true);
@@ -24,81 +26,142 @@ export default function InfoSlidesAdmin() {
 
   const handleAddSlide = async (e) => {
     e.preventDefault();
-    if (!imageUrl.trim()) return;
+    if (!imageUrl.trim()) {
+      alert("Por favor selecciona o sube una imagen primero.");
+      return;
+    }
 
-    const { error } = await supabase
+    setSaving(true);
+    const newSlide = { 
+      title: title.trim() || 'Información', 
+      image_url: imageUrl.trim(), 
+      order_index: slides.length 
+    };
+
+    const { data, error } = await supabase
       .from('info_slides')
-      .insert([{ title: title.trim() || 'Información', image_url: imageUrl.trim(), order_index: slides.length }]);
+      .insert([newSlide])
+      .select();
 
-    if (!error) {
+    setSaving(false);
+
+    if (!error && data) {
+      setSlides((prev) => [...prev, ...data]);
       setTitle('');
       setImageUrl('');
-      fetchSlides();
     } else {
-      alert("Error al agregar slide: " + error.message);
+      alert("Error al agregar slide: " + (error?.message || 'Error desconocido'));
     }
   };
 
-  const handleDeleteSlide = async (id) => {
-    if (window.confirm("¿Deseas eliminar esta imagen informativa?")) {
-      const { error } = await supabase.from('info_slides').delete().eq('id', id);
-      if (!error) fetchSlides();
+  const handleDeleteSlide = async (id, fileUrl) => {
+    if (!window.confirm("¿Deseas eliminar esta imagen informativa?")) return;
+
+    if (fileUrl) {
+      try {
+        const parts = fileUrl.split('/products/');
+        if (parts.length > 1) {
+          const storagePath = decodeURIComponent(parts[1]);
+          await supabase.storage.from('products').remove([storagePath]);
+        }
+      } catch (err) {
+        console.warn("No se pudo eliminar el archivo del storage:", err);
+      }
+    }
+
+    const { error } = await supabase.from('info_slides').delete().eq('id', id);
+    if (!error) {
+      setSlides((prev) => prev.filter((s) => s.id !== id));
+    } else {
+      alert("Error al eliminar slide: " + error.message);
     }
   };
 
   return (
-    <div className="p-4 bg-white rounded-2xl shadow-sm border border-pink-100 max-w-lg mx-auto">
-      <h3 className="text-lg font-black text-[#D81B60] mb-4">Fotos de Info Importante (Carrusel)</h3>
+    <div className="w-full max-w-lg mx-auto p-4 bg-white rounded-2xl shadow-sm border border-pink-100 flex flex-col h-full min-w-0">
+      <h3 className="text-base sm:text-lg font-black text-[#D81B60] mb-4 truncate">
+        Información Importante (Carrusel)
+      </h3>
 
-      <form onSubmit={handleAddSlide} className="flex flex-col gap-2.5 mb-5">
+      <form onSubmit={handleAddSlide} className="flex flex-col gap-3 mb-5 w-full min-w-0">
         <input
           type="text"
           placeholder="Título descriptivo (ej: Horarios y demoras)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="bg-rose-50/50 border border-rose-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E91E63]"
+          className="w-full bg-rose-50/50 border border-rose-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#E91E63]"
         />
-        <input
-          type="url"
-          placeholder="URL de la imagen (pegar link directo)"
-          required
+
+        <ImageUploader
+          label="Foto Informativa / Banner"
+          folder="info"
           value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          className="bg-rose-50/50 border border-rose-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E91E63]"
+          onChange={(url) => setImageUrl(url)}
         />
+
         <button
           type="submit"
-          className="bg-[#E91E63] text-white py-2 rounded-xl text-sm font-bold active:scale-95 transition-transform cursor-pointer"
+          disabled={saving || !imageUrl.trim()}
+          className="w-full bg-[#E91E63] hover:bg-[#D81B60] text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
         >
-          + Agregar Imagen al Carrusel
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Guardando...</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" />
+              <span>Agregar al Carrusel</span>
+            </>
+          )}
         </button>
       </form>
+      <div className="flex-1 overflow-y-auto pr-1 min-w-0">
+        {loading ? (
+          <div className="flex items-center justify-center py-6 text-gray-400 gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-[#E91E63]" />
+            <span className="text-xs">Cargando imágenes...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {slides.map((s, idx) => (
+              <div 
+                key={s.id} 
+                className="border border-pink-100 rounded-2xl overflow-hidden shadow-2xs bg-gray-50 flex flex-col justify-between min-w-0"
+              >
+                <div className="w-full h-36 bg-white flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={s.image_url} 
+                    alt={s.title} 
+                    className="w-full h-full object-contain" 
+                  />
+                </div>
 
-      {loading ? (
-        <p className="text-xs text-gray-400">Cargando...</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {slides.map((s, idx) => (
-            <div key={s.id} className="border border-pink-100 rounded-2xl overflow-hidden shadow-sm relative group bg-gray-50 flex flex-col justify-between">
-              <img src={s.image_url} alt={s.title} className="w-full h-36 object-contain bg-white" />
-              <div className="p-2 bg-white flex justify-between items-center border-t border-gray-100">
-                <span className="text-[11px] font-bold text-gray-700 truncate">{idx + 1}. {s.title}</span>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteSlide(s.id)}
-                  className="w-7 h-7 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-lg active:scale-90 transition-transform cursor-pointer"
-                  title="Eliminar foto"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="p-2.5 bg-white flex justify-between items-center border-t border-gray-100 gap-2">
+                  <span className="text-xs font-bold text-gray-700 truncate min-w-0 flex-1" title={s.title}>
+                    {idx + 1}. {s.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSlide(s.id, s.image_url)}
+                    className="w-7 h-7 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-lg active:scale-90 transition-transform cursor-pointer shrink-0"
+                    title="Eliminar foto"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-          {slides.length === 0 && (
-            <p className="text-xs text-gray-400 col-span-2 text-center py-4">No hay imágenes en el carrusel aún.</p>
-          )}
-        </div>
-      )}
+            ))}
+
+            {slides.length === 0 && (
+              <p className="text-xs text-gray-400 col-span-full text-center py-6">
+                No hay imágenes en el carrusel todavía.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

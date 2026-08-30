@@ -1,9 +1,8 @@
-import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react'; 
 
 function AdminProductList({ products = [], loading, onEdit, onDelete }) {
   if (loading) {
-    return <p className="text-center text-xs text-gray-400 p-6 animate-pulse">Sincronizando inventario... 🔄</p>;
+    return <p className="text-center text-xs text-gray-400 p-6 animate-pulse">Sincronizando inventario... </p>;
   }
 
   if (products.length === 0) {

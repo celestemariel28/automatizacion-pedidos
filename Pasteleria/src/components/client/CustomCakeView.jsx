@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { Lock } from 'lucide-react';
+import { Lock, ArrowLeft, Loader2 } from 'lucide-react';
 import CustomCakeInfoCard from './CustomCakeInfoCard';
 import CustomCakeForm from './CustomCakeForm';
+import ViewHeader from '../common/ViewHeader';
 
 export default function CustomCakeView({ setView, onUpdateProductVariants }) {
   const [infoRead, setInfoRead] = useState(false);
@@ -56,53 +57,51 @@ export default function CustomCakeView({ setView, onUpdateProductVariants }) {
       onUpdateProductVariants(customProductId, [customItem]);
     }
 
-    setView('form');
+    // Redirige al carrito para que BottomNav active el icono correspondiente
+    setView('cart');
   };
 
   return (
-    <main className="flex-1 p-4 max-w-md mx-auto w-full pb-20 animate-fadeIn">
-      {/* Volver */}
-      <div className="flex items-center gap-3 mb-4">
-        <button
-          type="button"
-          onClick={() => setView('categories')}
-          className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-[#E91E63] shadow-sm transition-all active:scale-90 cursor-pointer"
-          title="Volver a Categorías"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <h2 className="text-2xl font-black text-[#E91E63] capitalize">
-          Tortas Personalizadas
-        </h2>
-      </div>
-
-      {/* Paso 1: Información Importante */}
-      <CustomCakeInfoCard
-        infoRead={infoRead}
-        onConfirmRead={() => setInfoRead(true)}
-        infoSlides={infoSlides}
+    <main className="flex-1 p-4 max-w-md mx-auto w-full pb-24 animate-fadeIn">
+      {/* Encabezado */}
+      <ViewHeader
+        title="Tortas Personalizadas"
+        onBack={() => setView('categories')}
+        backTitle="Volver a Categorías"
       />
 
-      {/* Paso 2: Personalización / Bloqueo */}
-      {!infoRead ? (
-        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-3">
-          <div className="w-12 h-12 bg-pink-100/70 text-[#E91E63] rounded-full flex items-center justify-center shadow-inner">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h4 className="font-extrabold text-sm text-gray-800">Personalización Bloqueada</h4>
-          <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
-            Hacé clic arriba en <strong className="text-gray-700">"Ver Información Importante"</strong> para desbloquear las opciones de pisos, cobertura, porciones y rellenos.
-          </p>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
+          <Loader2 className="w-8 h-8 animate-spin text-[#E91E63]" />
+          <span className="text-xs font-semibold">Cargando opciones...</span>
         </div>
       ) : (
-        <CustomCakeForm
-          coveringsList={coveringsList}
-          portionsList={portionsList}
-          fillingsList={fillingsList}
-          onSubmit={handleCustomCakeSubmit}
-        />
+        <>
+          <CustomCakeInfoCard
+            infoRead={infoRead}
+            onConfirmRead={() => setInfoRead(true)}
+            infoSlides={infoSlides}
+          />
+
+          {!infoRead ? (
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-3 animate-fadeIn">
+              <div className="w-12 h-12 bg-pink-100/70 text-[#E91E63] rounded-full flex items-center justify-center shadow-inner">
+                <Lock className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <h4 className="font-extrabold text-sm text-gray-800">Personalización Bloqueada</h4>
+              <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
+                Hacé clic arriba en <strong className="text-gray-700">"Ver Información Importante"</strong> para desbloquear las opciones de pisos, cobertura, porciones y rellenos.
+              </p>
+            </div>
+          ) : (
+            <CustomCakeForm
+              coveringsList={coveringsList}
+              portionsList={portionsList}
+              fillingsList={fillingsList}
+              onSubmit={handleCustomCakeSubmit}
+            />
+          )}
+        </>
       )}
     </main>
   );

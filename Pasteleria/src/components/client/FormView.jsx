@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { enviarPedidoWhatsApp } from '../../utils/whatsappHelper';
-import CartSummaryCard from './CartSummaryCard';
+import OrderSummaryBreakdown from './OrderSummaryBreakdown';
+import ViewHeader from '../common/ViewHeader';
 
 export default function FormView({ 
   setView, 
-  cart, 
+  cart = {}, 
+  clearCart,
+  setCart,
   calculateSubtotal, 
   onRemoveItemFromCart, 
-  PRODUCTS_MOCK 
+  PRODUCTS_MOCK = [],
+  discountSettings = { isActive: false, percent: 0, paymentMethod: 'Efectivo' }
 }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,7 +22,20 @@ export default function FormView({
     notes: ''
   });
 
-  const totalPedido = calculateSubtotal();
+  // 1. CÁLCULO EN TIEMPO REAL DEL DESCUENTO
+  const subtotal = calculateSubtotal ? calculateSubtotal() : 0;
+  
+  const appliesDiscount = Boolean(
+    discountSettings?.isActive &&
+    parseFloat(discountSettings?.percent) > 0 &&
+    formData.paymentMethod === (discountSettings?.paymentMethod || 'Efectivo')
+  );
+
+  const discountAmount = appliesDiscount 
+    ? (subtotal * (parseFloat(discountSettings.percent) / 100)) 
+    : 0;
+    
+  const totalFinal = Math.max(0, subtotal - discountAmount);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,8 +45,9 @@ export default function FormView({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (totalPedido <= 0) {
+    if (subtotal <= 0) {
       alert("Tu carrito está vacío. Agregá al menos un producto.");
+      setView('products');
       return;
     }
 
@@ -46,8 +64,8 @@ export default function FormView({
         alert("Por favor, ingresá con cuánto vas a pagar.");
         return;
       }
-      if (cash < totalPedido) {
-        alert(`El monto ($${cash.toLocaleString('es-AR')}) es menor al total.`);
+      if (cash < totalFinal) {
+        alert(`El monto ($${cash.toLocaleString('es-AR')}) es menor al total a pagar ($${totalFinal.toLocaleString('es-AR')}).`);
         return;
       }
     }
@@ -55,25 +73,30 @@ export default function FormView({
     enviarPedidoWhatsApp({ 
       formData: { ...formData, phone: cleanPhone }, 
       cart, 
-      totalPedido, 
+      subtotal, 
+      discountAmount, 
+      discountPercent: discountSettings?.percent || 0, 
+      discountPaymentMethod: discountSettings?.paymentMethod || 'Efectivo',
+      totalFinal, 
       PRODUCTS_MOCK 
     });
+
+    if (clearCart) {
+      clearCart();
+    } else if (setCart) {
+      setCart({});
+    }
+
+    setView('products');
   };
 
   return (
     <main className="flex-1 p-4 max-w-md mx-auto w-full pb-20 animate-fadeIn">
-      <div className="flex items-center gap-2 mb-4">
-        <button 
-          type="button" 
-          onClick={() => setView('products')} 
-          className="w-9 h-9 flex items-center justify-center bg-white rounded-full text-[#E91E63] shadow-md active:scale-90 transition-transform cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <h2 className="text-2xl font-black text-[#E91E63]">Datos del Pedido</h2>
-      </div>
+      <ViewHeader
+        title="Datos del Pedido"
+        onBack={() => setView('cart')}
+        backTitle="Volver al carrito"
+      />
 
       <form onSubmit={handleSubmit} className="bg-white/95 backdrop-blur-sm p-5 rounded-3xl shadow-xl flex flex-col gap-4 text-gray-800 border border-pink-100">
         <div>
@@ -112,7 +135,7 @@ export default function FormView({
             name="paymentMethod" 
             value={formData.paymentMethod} 
             onChange={handleChange} 
-            className="w-full bg-rose-50/50 border border-rose-200 rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#E91E63] font-semibold text-gray-700 text-sm"
+            className="w-full bg-rose-50/50 border border-rose-200 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#E91E63] font-bold text-gray-700 text-sm"
           >
             <option value="Transferencia">Transferencia Bancaria</option>
             <option value="Efectivo">Efectivo (al retirar)</option>
@@ -129,7 +152,7 @@ export default function FormView({
               value={formData.cashAmount} 
               onChange={handleChange} 
               className="w-full bg-rose-50/50 border border-rose-200 rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#E91E63] text-sm font-bold text-[#E91E63]" 
-              placeholder={`Total: $${totalPedido}`} 
+              placeholder={`Total a pagar: $${totalFinal.toLocaleString('es-AR')}`} 
             />
           </div>
         )}
@@ -142,21 +165,23 @@ export default function FormView({
             value={formData.notes} 
             onChange={handleChange} 
             className="w-full bg-rose-50/50 border border-rose-200 rounded-xl py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[#E91E63] resize-none text-xs" 
-            placeholder="Ej: horario de retiro, dedicatoria..."
+            placeholder="Ej: horario de retiro, dedicatoria..." 
           />
         </div>
-
-        <CartSummaryCard 
+        
+        <OrderSummaryBreakdown 
           cart={cart}
-          calculateSubtotal={calculateSubtotal}
-          onRemoveItemFromCart={onRemoveItemFromCart}
-          setView={setView}
-          mode="form"
+          subtotal={subtotal}
+          appliesDiscount={appliesDiscount}
+          discountSettings={discountSettings}
+          discountAmount={discountAmount}
+          totalFinal={totalFinal}
+          onRemoveItem={onRemoveItemFromCart}
         />
 
         <button 
           type="submit" 
-          disabled={totalPedido <= 0}
+          disabled={subtotal <= 0}
           className="w-full bg-[#E91E63] hover:bg-[#D81B60] text-white py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition-transform tracking-wider cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <svg 
