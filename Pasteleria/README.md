@@ -1,16 +1,33 @@
-# React + Vite
+# 🧁 Pasteleria - Sistema de Automatización de Pedidos
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web interactiva desarrollada para la pastelería artesanal **Candela Garbini**. Permite a los clientes explorar productos, personalizar pedidos (porciones, variantes y rellenos) y generar el resumen formal de compra directamente vía WhatsApp, descontando stock en tiempo real.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Características Principales
 
-## React Compiler
+* **Catálogo por Categorías:** Navegación dinámica con buscador interactivo y visualización clara de disponibilidad de stock.
+* **Constructor de Pedidos & Modales:** Selección modular de porciones, variantes y combinaciones de múltiples rellenos.
+* **Tortas Personalizadas:** Módulo dedicado para cotización de tortas a medida según porciones y diseño de referencia.
+* **Carrito y Checkout Reactivo:** Cálculo dinámico de importes con soporte para promociones automáticas (% OFF según método de pago) y discriminación de vuelto en efectivo.
+* **Integración con WhatsApp:** Generación automática del mensaje estructurado con código de pedido único (`#PED-XXXX`) y codificación de emojis UTF-8.
+* **Panel Administrativo:** Gestión de inventario, actualización de stock, promociones y catálogo con Supabase.
+* **Diseño Mobile-First:** Interfaz adaptativa con optimización para pantallas táctiles y soporte de *safe-area* en dispositivos móviles.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 🛠️ Tecnologías Utilizadas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+* **Frontend:** React + Vite
+* **Estilos & UI:** Tailwind CSS + Lucide React (iconografía)
+* **Base de Datos & Backend:** Supabase (PostgreSQL, Row Level Security)
+* **Control de Versiones:** Git & GitHub
+
+---
+
+## 🚀 Instalación y Puesta en Marcha
+
+### 1. Clonar el repositorio
+```bash
+git clone [https://github.com/celestemariel28/automatizacion-pedidos.git](https://github.com/celestemariel28/automatizacion-pedidos.git)
+cd automatizacion-pedidos/Pasteleria
