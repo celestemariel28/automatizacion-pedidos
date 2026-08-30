@@ -47,8 +47,6 @@ export const enviarPedidoWhatsApp = async ({
       }
 
       const variantesActualizadas = (variantes || []).map(v => {
-        // Obtenemos todos los items comprados que correspondan a esta variante
-        // (limpiando sufijos como _CREMAPASTELERA con split('_')[0])
         const itemComprado = items.find(i => {
           const rawVariantId = String(i.variantId || '').split('_')[0];
           return String(v.id) === rawVariantId || String(v.id) === String(i.variantId);
@@ -86,7 +84,7 @@ export const enviarPedidoWhatsApp = async ({
       const isCustomCake = String(item?.productId || '').toLowerCase().startsWith('custom') || 
                            name.toUpperCase().includes('PERSONALIZADA');
       const isMiniTorta = name.toLowerCase().includes('mini torta') || 
-                          name.toLowerCase().includes('minitorta') ||
+                          name.toLowerCase().includes('minitorta') || 
                           name.toLowerCase().includes('mini');
 
       if (isCustomCake || isMiniTorta) {
@@ -151,8 +149,10 @@ export const enviarPedidoWhatsApp = async ({
     message += `\n📸 *Foto del diseño:* A continuación te adjunto la imagen o foto de referencia del diseño que me gustaría para mi pedido.`;
   }
 
-  const phoneNumber = "543815689490";
-  const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+  const phoneNumber = import.meta.env.VITE_WHATSAPP_PHONE || "549381000000";
+  
+  const encodedMessage = encodeURIComponent(message.normalize('NFC'));
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
 
   window.open(whatsappUrl, '_blank');
 };
